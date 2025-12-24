@@ -46,3 +46,9 @@ An app created with the purpose of helping people find new music while in the pr
 - To run the frontend, use this command: npm run dev
 
 
+## Ideas to improve the app
+- Create playlists based on the users mood, for ex: theres a focus , energetic , mellow playlist.
+
+
+## Things to think about
+- Do we want this to be an extention of spotify or its own standstill app/website
