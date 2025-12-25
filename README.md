@@ -48,7 +48,10 @@ An app created with the purpose of helping people find new music while in the pr
 
 ## Ideas to improve the app
 - Create playlists based on the users mood, for ex: theres a focus , energetic , mellow playlist.
+- Create a chatbot that you can say, "I want music for a X gathering based on my listening history", and a playlist will be created
+that the user can play based on the prompt.
 
 
 ## Things to think about
 - Do we want this to be an extention of spotify or its own standstill app/website
+- 
