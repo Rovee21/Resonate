@@ -1,14 +1,14 @@
 # Resonate: Discover New Music
 
 ## Overview
-An app created with the purpose of helping people find new music while in the process connecting with new friends. You will log in with spotify, and a feed page will pop up with music recently listened by a friend. You can switch to the "For You" tab and it will give you recomendations based on the music genre you have been listening to.
+An app created with the purpose of helping people find new music while in the process connecting with new friends. You will log in with your music provider, and a feed page will pop up with music recently listened by a friend. You can switch to the "AI playlists" tab and you can create a playlist based on whatever prompt you type into the chatbot.
 
 
 ## Tech Stack
 - Frontend: React(Next.js), TailwindCSS
 - Backend: FastAPI, RestAPI
 - Database: MySQL
-- ML: Scikit-learn, Jupyter Notebook, Power BI, Pandas
+- AI/ML: LLM(either OpenAI, Anthropic, Gemini), Scikit-Learn(for clustering users history), Pandas(for filtering LLM results)
 
 ## App Flow
 
@@ -17,19 +17,20 @@ An app created with the purpose of helping people find new music while in the pr
 - **Purpose**: Be a nice landing page that a user who stumbles accoss my product can understand whats going on and take the next steps
 - **Elements**:
     - Resonate Logo top left
+    - Resonate in the top middle
     - Hero section with a gradient background
-    - An Intro that explains whats possible with the app
+    - An one liner that tells user what app does in the hero section
     - A preview of what is contained in the app
-    - Login and Signup options on the top right with Spotify OAuth
+    - Login and Signup options on the top right that allows a user to choose their music provider, Spotify OAuth for now
 
 ### 2. Feed Page
 
-- **Purpose**: Where all of the functionality of the app happens: activity feed and for you tab
+- **Purpose**: Where all of the functionality of the app happens: activity feed and chatbot
 - **Elements**:
     - Spotify profile pic top left
     - Search user on the top
     - Activity tab that is a limitless feed that shows songs recently listen to by friends
-    - For you tab that gives you a music archetype badge, displays a chart of what genres you have been listening to, and song recomendations.
+    - AI plalists tab where you can talk to a chatbot to create your desired playlist
 
 ### 3. Profile Page
 
@@ -44,14 +45,3 @@ An app created with the purpose of helping people find new music while in the pr
 - To run the server in a new terminal, use this command: ngrok http 8000
 - To run the backend with this command: ./venv/bin/uvicorn main:app --reload 
 - To run the frontend, use this command: npm run dev
-
-
-## Ideas to improve the app
-- Create playlists based on the users mood, for ex: theres a focus , energetic , mellow playlist.
-- Create a chatbot that you can say, "I want music for a X gathering based on my listening history", and a playlist will be created
-that the user can play based on the prompt.
-
-
-## Things to think about
-- Do we want this to be an extention of spotify or its own standstill app/website
-- 
