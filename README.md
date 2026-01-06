@@ -21,7 +21,7 @@ An app created with the purpose of helping people find new music while in the pr
     - Hero section with a gradient background
     - An one liner that tells user what app does in the hero section
     - A preview of what is contained in the app
-    - Login and Signup options on the top right that allows a user to choose their music provider, Spotify OAuth for now
+    - Login options on the top right that allows a user to choose their music provider, Spotify OAuth for now
 
 ### 2. Feed Page
 
