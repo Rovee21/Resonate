@@ -64,47 +64,113 @@ def login():
     )
     return RedirectResponse(auth_url)
 
+# @app.get("/callback")
+# def callback(code: str):
+#     # Exchange authorization code for access token
+#     payload = {
+#         "grant_type": "authorization_code",
+#         "code": code,
+#         "redirect_uri": REDIRECT_URI,
+#         "client_id": CLIENT_ID,
+#         "client_secret": CLIENT_SECRET,
+#     }
+#     response = requests.post(SPOTIFY_TOKEN_URL, data=payload)
+#     token_info = response.json()
+#     access_token = token_info.get("access_token")
+
+#     # Get user profile from Spotify
+#     headers = {"Authorization": f"Bearer {access_token}"}
+#     user_profile = requests.get(SPOTIFY_ME_URL, headers=headers).json()
+
+#     #getting image url
+#     image_url = ""
+#     if "images" in user_profile and len(user_profile["images"]) > 0:
+#         image_url = user_profile["images"][0]["url"]
+
+#     #Saving user info into DB
+#     conn = sqlite3.connect("spotify_app.db")
+#     cursor = conn.cursor()
+#     cursor.execute("""
+#         INSERT OR IGNORE INTO users (spotify_id, name) VALUES (?, ?)""", 
+#         (user_profile["id"], user_profile.get("display_name", "")))
+#     conn.commit()
+#     conn.close()
+
+#     # Redirect back to frontend with user info in query params
+#     frontend_url = (
+#         f"{FRONTEND_URL}/profile"
+#         f"?name={user_profile.get('display_name', '')}"
+#         f"&image={image_url}"
+#         f"&access_token={access_token}"
+#         f"&spotify_id={user_profile['id']}"
+#     )
+#     return RedirectResponse(frontend_url)
+
 @app.get("/callback")
 def callback(code: str):
-    # Exchange authorization code for access token
-    payload = {
-        "grant_type": "authorization_code",
-        "code": code,
-        "redirect_uri": REDIRECT_URI,
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
-    }
-    response = requests.post(SPOTIFY_TOKEN_URL, data=payload)
-    token_info = response.json()
-    access_token = token_info.get("access_token")
+    print(f"Callback received with code: {code[:20]}...")  # Log first 20 chars of code
+    print(f"REDIRECT_URI: {REDIRECT_URI}")
+    print(f"CLIENT_ID: {CLIENT_ID[:10]}..." if CLIENT_ID else "CLIENT_ID: None")
+    print(f"FRONTEND_URL: {FRONTEND_URL}")
+    
+    try:
+        # Exchange authorization code for access token
+        payload = {
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": REDIRECT_URI,
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+        }
+        print("Sending token request to Spotify...")
+        response = requests.post(SPOTIFY_TOKEN_URL, data=payload)
+        print(f"Token response status: {response.status_code}")
+        
+        if response.status_code != 200:
+            print(f"Token error: {response.text}")
+            return JSONResponse({"error": response.text}, status_code=response.status_code)
+        
+        token_info = response.json()
+        access_token = token_info.get("access_token")
+        print(f"Got access token: {access_token[:20] if access_token else 'None'}...")
 
-    # Get user profile from Spotify
-    headers = {"Authorization": f"Bearer {access_token}"}
-    user_profile = requests.get(SPOTIFY_ME_URL, headers=headers).json()
+        # Get user profile from Spotify
+        headers = {"Authorization": f"Bearer {access_token}"}
+        print("Fetching user profile...")
+        user_profile = requests.get(SPOTIFY_ME_URL, headers=headers).json()
+        print(f"User profile: {user_profile.get('display_name', 'Unknown')}")
 
-    #getting image url
-    image_url = ""
-    if "images" in user_profile and len(user_profile["images"]) > 0:
-        image_url = user_profile["images"][0]["url"]
+        #getting image url
+        image_url = ""
+        if "images" in user_profile and len(user_profile["images"]) > 0:
+            image_url = user_profile["images"][0]["url"]
 
-    #Saving user info into DB
-    conn = sqlite3.connect("spotify_app.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT OR IGNORE INTO users (spotify_id, name) VALUES (?, ?)""", 
-        (user_profile["id"], user_profile.get("display_name", "")))
-    conn.commit()
-    conn.close()
+        #Saving user info into DB
+        conn = sqlite3.connect("spotify_app.db")
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT OR IGNORE INTO users (spotify_id, name) VALUES (?, ?)""", 
+            (user_profile["id"], user_profile.get("display_name", "")))
+        conn.commit()
+        conn.close()
+        print("User saved to database")
 
-    # Redirect back to frontend with user info in query params
-    frontend_url = (
-        f"{FRONTEND_URL}/profile"
-        f"?name={user_profile.get('display_name', '')}"
-        f"&image={image_url}"
-        f"&access_token={access_token}"
-        f"&spotify_id={user_profile['id']}"
-    )
-    return RedirectResponse(frontend_url)
+        # Redirect back to frontend with user info in query params
+        frontend_url = (
+            f"{FRONTEND_URL}/profile"
+            f"?name={user_profile.get('display_name', '')}"
+            f"&image={image_url}"
+            f"&access_token={access_token}"
+            f"&spotify_id={user_profile['id']}"
+        )
+        print(f"Redirecting to: {frontend_url}")
+        return RedirectResponse(frontend_url)
+    
+    except Exception as e:
+        print(f"ERROR in callback: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        return JSONResponse({"error": str(e)}, status_code=500)
 
 
 SPOTIFY_RECENT_URL = "https://api.spotify.com/v1/me/player/recently-played?limit=20"
