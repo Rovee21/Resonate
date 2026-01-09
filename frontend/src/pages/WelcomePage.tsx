@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import ProviderSection from "../components/ProviderSelection"
 
 function WelcomePage(){
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   const handleLoginClick = () => {
     setIsModalOpen(true);
@@ -12,7 +13,7 @@ function WelcomePage(){
     setIsModalOpen(false);
 
     if (provider === "spotify") {
-      window.location.href = "http://localhost:8000/login";
+      window.location.href = `${API_URL}/login`;
     }
 
     // Can add other providers here

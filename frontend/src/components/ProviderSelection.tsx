@@ -1,5 +1,3 @@
-import React from "react";
-
 interface ProviderSectionProps {
   isOpen: boolean;
   onClose: () => void;

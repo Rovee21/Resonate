@@ -1,23 +1,31 @@
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
+
+interface TrackHistory {
+  track_name: string;
+  artist_name: string;
+  album_name: string;
+  played_at: string;
+}
 
 function Profile() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   const name = params.get("name");
   const image = params.get("image");
   const spotify_id = params.get("spotify_id");
   const access_token = params.get("access_token");
 
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState<TrackHistory[]>([]);
 
   //This function runs whenever the access token or the spotify id change and updates history
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/history", {
+        const res = await axios.get(`${API_URL}/history`, {
           params: { spotify_id, access_token },
         });
         setHistory(res.data);
@@ -28,7 +36,7 @@ function Profile() {
     if (spotify_id && access_token) {
       fetchHistory();
     }
-  }, [spotify_id, access_token]);
+  }, [spotify_id, access_token, API_URL]);
 
   if (!name) {
     return <p>Loading profile...</p>;

@@ -10,9 +10,10 @@ load_dotenv()
 
 app = FastAPI()
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -20,7 +21,7 @@ app.add_middleware(
 
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-REDIRECT_URI = "https://fafe085739d6.ngrok-free.app/callback"
+REDIRECT_URI = os.getenv("REDIRECT_URI")
 
 
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
@@ -97,7 +98,7 @@ def callback(code: str):
 
     # Redirect back to frontend with user info in query params
     frontend_url = (
-        f"http://localhost:5173/profile"
+        f"{FRONTEND_URL}/profile"
         f"?name={user_profile.get('display_name', '')}"
         f"&image={image_url}"
         f"&access_token={access_token}"
@@ -157,3 +158,9 @@ def get_history(spotify_id: str, access_token:str):
         {"track_name": h[0], "artist_name": h[1], "album_name": h[2], "played_at": h[3]}
         for h in history
     ]
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
+
