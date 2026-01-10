@@ -4,7 +4,6 @@ import requests, os
 import sqlite3
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pathlib import Path
 from urllib.parse import quote
 
 load_dotenv()
@@ -28,6 +27,7 @@ REDIRECT_URI = os.getenv("REDIRECT_URI")
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
 SPOTIFY_ME_URL = "https://api.spotify.com/v1/me"
+SPOTIFY_RECENT_URL = "https://api.spotify.com/v1/me/player/recently-played?limit=20"
 
 #Connecting to the DB
 def init_db():
@@ -69,11 +69,6 @@ def login():
 
 @app.get("/callback")
 def callback(code: str):
-    print(f"Callback received with code: {code[:20]}...")  # Log first 20 chars of code
-    print(f"REDIRECT_URI: {REDIRECT_URI}")
-    print(f"CLIENT_ID: {CLIENT_ID[:10]}..." if CLIENT_ID else "CLIENT_ID: None")
-    print(f"FRONTEND_URL: {FRONTEND_URL}")
-    
     try:
         # Exchange authorization code for access token
         payload = {
@@ -83,24 +78,21 @@ def callback(code: str):
             "client_id": CLIENT_ID,
             "client_secret": CLIENT_SECRET,
         }
-        print(f"Sending token request with redirect_uri: {REDIRECT_URI}")
+
         response = requests.post(SPOTIFY_TOKEN_URL, data=payload)
-        print(f"Token response status: {response.status_code}")
         
         if response.status_code != 200:
-            error_text = response.text
-            print(f"Token error: {error_text}")
-            return JSONResponse({"error": error_text}, status_code=response.status_code)
-        
+            return JSONResponse({"error": response.text}, status_code=response.status_code)
+
         token_info = response.json()
         access_token = token_info.get("access_token")
-        print(f"Got access token: {access_token[:20] if access_token else 'None'}...")
+
+        if not access_token:
+            return JSONResponse({"error" : "Failed to get access token"}, status_code=500)
 
         # Get user profile from Spotify
         headers = {"Authorization": f"Bearer {access_token}"}
-        print("Fetching user profile...")
         user_profile = requests.get(SPOTIFY_ME_URL, headers=headers).json()
-        print(f"User profile: {user_profile.get('display_name', 'Unknown')}")
 
         #getting image url
         image_url = ""
@@ -115,7 +107,6 @@ def callback(code: str):
             (user_profile["id"], user_profile.get("display_name", "")))
         conn.commit()
         conn.close()
-        print("User saved to database")
 
         # Redirect back to frontend with user info in query params
         frontend_url = (
@@ -125,67 +116,60 @@ def callback(code: str):
             f"&access_token={access_token}"
             f"&spotify_id={user_profile['id']}"
         )
-        print(f"Redirecting to: {frontend_url}")
         return RedirectResponse(frontend_url)
     
     except Exception as e:
-        print(f"ERROR in callback: {str(e)}")
-        import traceback
-        print(traceback.format_exc())
         return JSONResponse({"error": str(e)}, status_code=500)
 
+@app.get("/history")
+def get_history(spotify_id: str, access_token:str):
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.get(SPOTIFY_RECENT_URL, headers=headers)
+    data = response.json()
 
-SPOTIFY_RECENT_URL = "https://api.spotify.com/v1/me/player/recently-played?limit=20"
+    conn = sqlite3.connect("spotify_app.db")
+    cursor = conn.cursor()
 
-# @app.get("/history")
-# def get_history(spotify_id: str, access_token:str):
-#     headers = {"Authorization": f"Bearer {access_token}"}
-#     response = requests.get(SPOTIFY_RECENT_URL, headers=headers)
-#     data = response.json()
-
-#     conn = sqlite3.connect("spotify_app.db")
-#     cursor = conn.cursor()
-
-#     # Get user_id
-#     cursor.execute("SELECT id FROM users WHERE spotify_id = ?", (spotify_id,))
-#     user_row = cursor.fetchone()
-#     if not user_row:
-#         return {"error": "User not found"}
-#     user_id = user_row[0]
+    # Get user_id
+    cursor.execute("SELECT id FROM users WHERE spotify_id = ?", (spotify_id,))
+    user_row = cursor.fetchone()
+    if not user_row:
+        return {"error": "User not found"}
+    user_id = user_row[0]
 
 
-#     # Save tracks
-#     for item in data.get("items", []):
-#         track = item["track"]
-#         played_at = item["played_at"]
-#         cursor.execute("""
-#             INSERT INTO listening_history (user_id, track_name, artist_name, album_name, played_at)
-#             VALUES (?, ?, ?, ?, ?)
-#         """, (
-#             user_id,
-#             track["name"],
-#             ", ".join([a["name"] for a in track["artists"]]),
-#             track["album"]["name"],
-#             played_at,
-#         ))
+    # Save tracks
+    for item in data.get("items", []):
+        track = item["track"]
+        played_at = item["played_at"]
+        cursor.execute("""
+            INSERT INTO listening_history (user_id, track_name, artist_name, album_name, played_at)
+            VALUES (?, ?, ?, ?, ?)
+        """, (
+            user_id,
+            track["name"],
+            ", ".join([a["name"] for a in track["artists"]]),
+            track["album"]["name"],
+            played_at,
+        ))
 
-#     conn.commit()
+    conn.commit()
 
-#     # Fetch from DB to return
-#     cursor.execute("""
-#         SELECT track_name, artist_name, album_name, played_at
-#         FROM listening_history
-#         WHERE user_id = ?
-#         ORDER BY played_at DESC LIMIT 20
-#     """, (user_id,))
-#     history = cursor.fetchall()
+    # Fetch from DB to return
+    cursor.execute("""
+        SELECT track_name, artist_name, album_name, played_at
+        FROM listening_history
+        WHERE user_id = ?
+        ORDER BY played_at DESC LIMIT 20
+    """, (user_id,))
+    history = cursor.fetchall()
 
-#     conn.close()
+    conn.close()
 
-#     return [
-#         {"track_name": h[0], "artist_name": h[1], "album_name": h[2], "played_at": h[3]}
-#         for h in history
-#     ]
+    return [
+        {"track_name": h[0], "artist_name": h[1], "album_name": h[2], "played_at": h[3]}
+        for h in history
+    ]
 
 if __name__ == "__main__":
     import uvicorn
