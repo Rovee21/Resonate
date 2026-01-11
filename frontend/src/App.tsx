@@ -1,13 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Profile from "./pages/FeedPage";
 import WelcomePage from "./pages/WelcomePage";
+import FeedPage from "./pages/FeedPage";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<WelcomePage />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/FeedPage" element={<FeedPage />} />
       </Routes>
     </Router>
   );
