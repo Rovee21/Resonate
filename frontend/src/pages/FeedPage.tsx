@@ -8,10 +8,10 @@ function FeedPage() {
 
   const name = params.get("name");
   const image = params.get("image");
-  const spotify_id = params.get("spotify_id");
-  const access_token = params.get("access_token");
+  // const spotify_id = params.get("spotify_id");
+  // const access_token = params.get("access_token");
 
-  const [activeTab, setActiveTab] = useState<"activity" | "ai-playlist">("activity");
+  // const [activeTab, setActiveTab] = useState<"activity" | "ai-playlist">("activity");
   const [searchQuery, setSearchQuery] = useState("");
 
   if (!name) {
