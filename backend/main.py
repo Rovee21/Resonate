@@ -121,55 +121,6 @@ def callback(code: str):
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
-@app.get("/history")
-def get_history(spotify_id: str, access_token:str):
-    headers = {"Authorization": f"Bearer {access_token}"}
-    response = requests.get(SPOTIFY_RECENT_URL, headers=headers)
-    data = response.json()
-
-    conn = sqlite3.connect("spotify_app.db")
-    cursor = conn.cursor()
-
-    # Get user_id
-    cursor.execute("SELECT id FROM users WHERE spotify_id = ?", (spotify_id,))
-    user_row = cursor.fetchone()
-    if not user_row:
-        return {"error": "User not found"}
-    user_id = user_row[0]
-
-
-    # Save tracks
-    for item in data.get("items", []):
-        track = item["track"]
-        played_at = item["played_at"]
-        cursor.execute("""
-            INSERT INTO listening_history (user_id, track_name, artist_name, album_name, played_at)
-            VALUES (?, ?, ?, ?, ?)
-        """, (
-            user_id,
-            track["name"],
-            ", ".join([a["name"] for a in track["artists"]]),
-            track["album"]["name"],
-            played_at,
-        ))
-
-    conn.commit()
-
-    # Fetch from DB to return
-    cursor.execute("""
-        SELECT track_name, artist_name, album_name, played_at
-        FROM listening_history
-        WHERE user_id = ?
-        ORDER BY played_at DESC LIMIT 20
-    """, (user_id,))
-    history = cursor.fetchall()
-
-    conn.close()
-
-    return [
-        {"track_name": h[0], "artist_name": h[1], "album_name": h[2], "played_at": h[3]}
-        for h in history
-    ]
 
 if __name__ == "__main__":
     import uvicorn
