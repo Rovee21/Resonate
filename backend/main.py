@@ -110,7 +110,7 @@ def callback(code: str):
 
         # Redirect back to frontend with user info in query params
         frontend_url = (
-            f"{FRONTEND_URL}/FeedPage"
+            f"{FRONTEND_URL}/feed"
             f"?name={user_profile.get('display_name', '')}"
             f"&image={image_url}"
             f"&access_token={access_token}"

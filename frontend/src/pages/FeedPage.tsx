@@ -11,7 +11,7 @@ function FeedPage() {
   // const spotify_id = params.get("spotify_id");
   // const access_token = params.get("access_token");
 
-  // const [activeTab, setActiveTab] = useState<"activity" | "ai-playlist">("activity");
+  const [activeTab, setActiveTab] = useState<"activity" | "ai-playlist">("activity");
   const [searchQuery, setSearchQuery] = useState("");
 
   if (!name) {
@@ -44,6 +44,51 @@ function FeedPage() {
           />
         </div>
       </header>
+      {/* Tab Navigation */}
+      <div className="flex border-b border-gray-800">
+        <button
+          onClick={() => setActiveTab("activity")}
+          className={`flex-1 px-6 py-4 font-medium transition ${
+            activeTab === "activity"
+              ? "text-white border-b-2 border-green-500"
+              : "text-gray-400 hover:text-white"
+          }`}
+        >
+          Activity
+        </button>
+        <button
+          onClick={() => setActiveTab("ai-playlist")}
+          className={`flex-1 px-6 py-4 font-medium transition ${
+            activeTab === "ai-playlist"
+              ? "text-white border-b-2 border-green-500"
+              : "text-gray-400 hover:text-white"
+          }`}
+        >
+          AI Playlist
+        </button>
+      </div>
+      {/* Tab Content */}
+      <main className="p-6">
+        {activeTab === "activity" && (
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold mb-6">Activity Feed</h2>
+            <div className="text-gray-400 text-center py-12">
+              <p>Your friends' recently played songs will appear here.</p>
+              <p className="text-sm mt-2">Coming soon...</p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "ai-playlist" && (
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold mb-6">AI Playlist Generator</h2>
+            <div className="text-gray-400 text-center py-12">
+              <p>Chat with our AI to create your perfect playlist.</p>
+              <p className="text-sm mt-2">Coming soon...</p>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
