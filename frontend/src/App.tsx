@@ -8,6 +8,7 @@ function App() {
       <Routes>
         <Route path="/" element={<WelcomePage />} />
         <Route path="/feed" element={<FeedPage />} />
+        <Route path="/profile" element={<FeedPage />} />
       </Routes>
     </Router>
   );
