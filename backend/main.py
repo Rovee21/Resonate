@@ -51,6 +51,81 @@ def init_db():
             played_at TEXT,
             FOREIGN KEY (user_id) REFERENCES users(id)
             )""")
+
+    cursor.execute(
+        """CREATE TABLE IF NOT EXISTS user_clusters (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        cluster_id INTEGER,
+        cluster_label TEXT,
+        mean_energy REAL,
+        mean_danceability REAL,
+        mean_valance REAL,
+        mean_tempo REAL,
+        dominant_genres TEXT,
+        track_count INTEGER,
+        created_at TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        )""")
+    
+    cursor.execute(
+        """CREATE TABLE IF NOT EXISTS track_clusters (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        track_id TEXT,
+        track_uri TEXT,
+        cluster_id INTEGER,
+        energy REAL,
+        danceability REAL,
+        valence REAL,
+        tempo REAL,
+        acousticness REAL,
+        instrumentalness REAL,
+        liveness REAL,
+        speechiness REAL,
+        loudness REAL,
+        key INTEGER,
+        mode INTEGER,
+        time_signature INTEGER,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        )""")
+
+    cursor.execute(
+    """CREATE TABLE IF NOT EXISTS playlists (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        name TEXT,
+        description TEXT,
+        created_at TEXT,
+        spotify_playlist_id TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )""")
+
+    cursor.execute(
+    """CREATE TABLE IF NOT EXISTS playlist_tracks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        playlist_id INTEGER,
+        track_id TEXT,
+        track_name TEXT,
+        artist_name TEXT,
+        album_name TEXT,
+        track_uri TEXT,
+        position INTEGER,
+        FOREIGN KEY (playlist_id) REFERENCES playlists(id)
+    )""")
+
+    cursor.execute(
+    """CREATE TABLE IF NOT EXISTS chat_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        playlist_id INTEGER,
+        role TEXT,
+        content TEXT,
+        created_at TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (playlist_id) REFERENCES playlists(id)
+    )""")
+
     conn.commit()
     conn.close()
 

@@ -8,7 +8,7 @@ An app created with the purpose of helping people find new music while in the pr
 - Frontend: React(Next.js), TailwindCSS
 - Backend: FastAPI, RestAPI
 - Database: MySQL
-- AI/ML: LLM(either OpenAI, Anthropic, Gemini), Scikit-Learn(for clustering users history), Pandas(for filtering LLM results)
+- AI/ML: LLM(OpenAI), Scikit-Learn(for clustering users history), Pandas(for filtering LLM results)
 
 ## App Flow
 
